@@ -25,6 +25,7 @@ RAW = os.path.join(ROOT, "content", "raw")
 ED = os.path.join(ROOT, "content", "editorial")
 OUT = os.path.join(ROOT, "app", "src", "main", "assets", "azkar.json")
 
+HARAKAT = re.compile("[\u064B-\u0652\u0670]")
 PUNCT = re.compile("[\\s«»﴿﴾()\\[\\]،.:؟؛!\\-…\"']+")
 
 
@@ -104,6 +105,9 @@ def main():
                     fadl = ed.get("fadl", "")
                     count = ed.get("count", 1 if zikr else 0)
                     source_text = letters(e.get("matn", "") + " " + e.get("extra", ""))
+                    voc = ed.get("zikrVocalized", "")
+                    if voc and letters(HARAKAT.sub("", voc)) != letters(zikr):
+                        errors.append(f"#{num}: vocalized zikr changes letters, not only diacritics")
                     if zikr and letters(zikr) not in source_text:
                         errors.append(f"#{num}: zikr is not a verbatim excerpt of the matn: «{zikr[:60]}»")
                     for part in [p for p in fadl.split(" … ")] if fadl else []:
@@ -117,7 +121,7 @@ def main():
                         "num": num,
                         "page": e["page"],
                         "subheading": sub,
-                        "zikr": zikr,
+                        "zikr": voc or zikr,
                         "count": count if zikr else 0,
                         "fadl": fadl,
                         "matn": e.get("matn", ""),
