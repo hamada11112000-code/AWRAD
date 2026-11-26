@@ -48,6 +48,40 @@ def default_title(heading):
     return t.strip()
 
 
+def apply_corrections(batches_data, corrections, errors):
+    """Fix obvious printing errors (approved by the project owner). Raw files stay verbatim;
+    each fix is applied here and listed in content/review/CORRECTIONS.md, never shown in the app."""
+    applied = []
+    for cor in corrections:
+        hits = []
+        for data in batches_data:
+            for sec in data["sections"]:
+                for e in sec["entries"]:
+                    if e.get("page") not in (cor["page"], cor["page"] - 1):
+                        continue
+                    if "num" in cor and e.get("num") != cor["num"]:
+                        continue
+                    for k, v in e.items():
+                        if k == "flags":
+                            continue
+                        if isinstance(v, str) and cor["from"] in v:
+                            hits.append((e, k, None, sec))
+                        elif isinstance(v, list):
+                            for i, x in enumerate(v):
+                                if isinstance(x, str) and cor["from"] in x:
+                                    hits.append((e, k, i, sec))
+        if len(hits) != 1:
+            errors.append(f"correction «{cor['from']}» p{cor['page']}: found {len(hits)} places (need exactly 1)")
+            continue
+        e, k, i, sec = hits[0]
+        if i is None:
+            e[k] = e[k].replace(cor["from"], cor["to"], 1)
+        else:
+            e[k][i] = e[k][i].replace(cor["from"], cor["to"], 1)
+        applied.append((cor, e, k))
+    return applied
+
+
 def main():
     allow_missing = "--allow-missing-editorial" in sys.argv
     titles = load(os.path.join(ED, "titles.json"), {})
@@ -58,6 +92,12 @@ def main():
     if not batches:
         sys.exit("no raw batches found")
 
+    batches_data = [json.load(open(p, encoding="utf-8")) for p in batches]
+    corrections = load(os.path.join(ED, "corrections.json"), [])
+    applied = apply_corrections(batches_data, corrections, errors)
+    fixed_ids = {id(e): (cor, k) for cor, e, k in applied}
+    report_rows = []
+
     categories = []
     cur = None
     sub = ""
@@ -65,8 +105,7 @@ def main():
     seen_nums = set()
     extra_counter = 0
 
-    for path in batches:
-        data = json.load(open(path, encoding="utf-8"))
+    for data in batches_data:
         for sec in data["sections"]:
             heading = sec["heading"]
             if sec["level"] == 1:
@@ -96,6 +135,9 @@ def main():
             if cur is None:
                 continue
             for e in sec["entries"]:
+                if id(e) in fixed_ids:
+                    cor, k = fixed_ids[id(e)]
+                    report_rows.append((len(categories), cur["title"], cor, e, k))
                 t = e["type"]
                 if t == "hadith":
                     num = e["num"]
@@ -154,6 +196,18 @@ def main():
     if errors:
         print("\n".join("ERROR " + e for e in errors))
         sys.exit(1)
+
+    fields = {"isnad": "الإسناد", "matn": "المتن", "takhrij": "التخريج", "notes": "حاشية",
+              "source": "المصدر", "ref": "مرجع الآية", "text": "النص", "extra": "زيادة"}
+    with open(os.path.join(ROOT, "content", "review", "CORRECTIONS.md"), "w", encoding="utf-8") as f:
+        f.write("# تصحيح الأخطاء المطبعية في الكتاب\n\n")
+        f.write("هذه الأخطاء صُحِّحت في التطبيق بموافقة صاحب المشروع، ولا تظهر هذه الملاحظات داخل التطبيق.\n")
+        f.write("الملف يُولَّد تلقائيًّا من `content/editorial/corrections.json` عند تشغيل `tools/build_content.py`.\n\n")
+        f.write("| رقم الباب | الباب | الصفحة | الحديث | الموضع | في الكتاب | التصحيح | السبب |\n")
+        f.write("|---|---|---|---|---|---|---|---|\n")
+        for n, title, cor, e, k in report_rows:
+            num = e.get("num", "—")
+            f.write(f"| {n} | {title} | {e['page']} | {num} | {fields.get(k, k)} | {cor['from']} | {cor['to']} | {cor['reason']} |\n")
 
     lib = {
         "version": 1,
