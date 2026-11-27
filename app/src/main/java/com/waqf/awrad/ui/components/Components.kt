@@ -3,6 +3,7 @@ package com.waqf.awrad.ui.components
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,14 +28,18 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.waqf.awrad.R
 import com.waqf.awrad.ui.theme.AwradTheme
 import com.waqf.awrad.ui.theme.Brand
 import kotlin.math.cos
@@ -100,6 +105,31 @@ fun Emblem(modifier: Modifier = Modifier, size: Dp = 44.dp) {
         }
         drawCircle(Brand.Deep, r * 0.3f, c)
         drawCircle(Brand.GoldLight, r * 0.2f, c, style = Stroke(1.dp.toPx()))
+    }
+}
+
+/**
+ * ختم «وَقْف» الخافت المائل خلف محتوى «عن التطبيق».
+ *
+ * الهوية البصرية الثابتة لكل مشروع يصدر عن «وَقْف»، منقولة من مشروع «قيراطان»
+ * (`design/brand/WAQF_SEAL_IDENTITY.md`). الختم زخرفة لا يقرؤها قارئ الشاشة،
+ * و**ليس شعارًا في الواجهة** بنصّ دليل الهوية، فلا يوضع في الترويسات.
+ */
+@Composable
+fun WaqfSealBackground(content: @Composable BoxScope.() -> Unit) {
+    val c = AwradTheme.colors
+    Box {
+        Image(
+            painterResource(R.drawable.waqf_seal),
+            contentDescription = null,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .size(176.dp)
+                .graphicsLayer { rotationZ = -12f },
+            alpha = if (c.isDark) 0.10f else 0.14f,
+            colorFilter = if (c.isDark) ColorFilter.tint(c.ink) else null,
+        )
+        content()
     }
 }
 

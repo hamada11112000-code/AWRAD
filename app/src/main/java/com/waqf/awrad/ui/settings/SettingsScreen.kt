@@ -33,6 +33,7 @@ import com.waqf.awrad.data.Library
 import com.waqf.awrad.data.Settings
 import com.waqf.awrad.data.ThemeMode
 import com.waqf.awrad.ui.components.Emblem
+import com.waqf.awrad.ui.components.WaqfSealBackground
 import com.waqf.awrad.ui.theme.Amiri
 import com.waqf.awrad.ui.theme.AwradTheme
 
@@ -108,35 +109,41 @@ fun SettingsScreen(
         }
 
         Card {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Emblem(size = 48.dp)
-                Spacer(Modifier.width(12.dp))
+            WaqfSealBackground {
                 Column {
-                    Text("أوراد", style = MaterialTheme.typography.headlineSmall, color = c.ink)
-                    Text("الإصدار $versionName", style = MaterialTheme.typography.labelSmall, color = c.mute)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Emblem(size = 48.dp)
+                        Spacer(Modifier.width(12.dp))
+                        Column {
+                            Text("أوراد", style = MaterialTheme.typography.headlineSmall, color = c.ink)
+                            Text("الإصدار $versionName", style = MaterialTheme.typography.labelSmall, color = c.mute)
+                        }
+                    }
+                    Spacer(Modifier.height(12.dp))
+                    Text(
+                        "وقفٌ لله تعالى، لا يُباع. نسأل الله أن يتقبله وأن ينفع به.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = c.inkSoft,
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    val book = library?.book
+                    Text(
+                        "المحتوى منقول من كتاب «${book?.title?.ifBlank { null } ?: "الصحيح المسند من أذكار اليوم والليلة"}» " +
+                            "للشيخ ${book?.author?.ifBlank { null } ?: "مصطفى بن العدوي"}، بأسانيده وتخريجه وأحكامه، " +
+                            "مع ذكر رقم الصفحة في الكتاب عند كل ذكر للرجوع إليه.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = c.mute,
+                    )
+                    Spacer(Modifier.height(6.dp))
+                    Text(
+                        "الخطوط: أميري (Amiri) وتجوال (Tajawal) برخصة SIL Open Font License.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = c.mute,
+                    )
+                    // مساحة يظهر فيها الختم تحت آخر سطر، كما في دليل الهوية
+                    Spacer(Modifier.height(96.dp))
                 }
             }
-            Spacer(Modifier.height(12.dp))
-            Text(
-                "وقفٌ لله تعالى، لا يُباع. نسأل الله أن يتقبله وأن ينفع به.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = c.inkSoft,
-            )
-            Spacer(Modifier.height(8.dp))
-            val book = library?.book
-            Text(
-                "المحتوى منقول من كتاب «${book?.title?.ifBlank { null } ?: "الصحيح المسند من أذكار اليوم والليلة"}» " +
-                    "للشيخ ${book?.author?.ifBlank { null } ?: "مصطفى بن العدوي"}، بأسانيده وتخريجه وأحكامه، " +
-                    "مع ذكر رقم الصفحة في الكتاب عند كل ذكر للرجوع إليه.",
-                style = MaterialTheme.typography.bodySmall,
-                color = c.mute,
-            )
-            Spacer(Modifier.height(6.dp))
-            Text(
-                "الخطوط: أميري (Amiri) وتجوال (Tajawal) برخصة SIL Open Font License.",
-                style = MaterialTheme.typography.bodySmall,
-                color = c.mute,
-            )
         }
     }
 }
