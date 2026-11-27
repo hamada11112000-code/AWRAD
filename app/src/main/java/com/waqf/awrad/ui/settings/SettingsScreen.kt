@@ -140,8 +140,8 @@ fun SettingsScreen(
                         style = MaterialTheme.typography.bodySmall,
                         color = c.mute,
                     )
-                    // مساحة يظهر فيها الختم تحت آخر سطر، كما في دليل الهوية
-                    Spacer(Modifier.height(96.dp))
+                    // مساحة يظهر فيها الختم تحت آخر سطر: ١٢٠dp بنصّ دليل الهوية
+                    Spacer(Modifier.height(120.dp))
                 }
             }
         }
