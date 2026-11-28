@@ -1,0 +1,13 @@
+.gradle/
+build/
+local.properties
+.idea/
+*.iml
+.DS_Store
+captures/
+.kotlin/
+content/pages
+content/pages/
+tools/__pycache__/
+content/qabas/pages
+content/qabas/pages/
